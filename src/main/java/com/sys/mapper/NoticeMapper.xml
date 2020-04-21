@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.sys.mapper.NoticeMapper" >
+<sql id="Base_List">
+	id,account,createTime,isDeleted,isDisabled
+</sql>
+	<!-- 查询总数-->
+    <select id="selectCount" resultType="long">
+    	select 
+    	count(id)
+    	from t_notice
+ 		   	where isDeleted=false
+    </select>
+    
+    <!-- 分页查询 -->
+    <select id="selectByPage" parameterType="map" resultType="Notice">
+    	select 
+    	<include refid="Base_List" />
+    	from t_notice
+ 		   	where isDeleted=false
+ 		   	ORDER BY createTime DESC
+	    	limit #{currPage},#{pageSize}
+    </select>
+    
+    <!-- 实现一个伪删除，使用更新，将isDeleted变为true即可 --> 
+    <delete id="delete" parameterType="long">
+    	update t_notice 
+    		set isDeleted=true
+    		where id=#{id}
+    </delete>
+    
+    <select id="select" parameterType="Notice" resultType="Notice">
+    	select 
+    	<include refid="Base_List" />
+    	from t_notice
+ 		   	where isDeleted=false
+    	<if test="id!=null"> and id=#{id} </if>
+    	<if test="account!=null"> and account=#{account} </if>
+    </select>  
+    
+    <insert id="insert" parameterType="Notice">
+		insert into t_notice
+        	(account,createTime,isDisabled)
+        values
+        	(#{account},#{createTime},#{isDisabled})
+    </insert>
+    
+    <!-- 禁用/启用 -->
+ 	<update id="updateDisabled" parameterType="Notice">
+ 		update t_notice
+    		set isDisabled=#{isDisabled}
+    		where id=#{id} 
+ 	</update>
+ 	<!-- 删除/恢复 -->
+ 	<update id="updateDisDelete" parameterType="Notice">
+ 		update t_notice
+    		set isDeleted=#{isDeleted},createTime=#{createTime}
+    		where id=#{id} 
+ 	</update>
+ 	
+ 	
+ 	<!-- selectisDelete -->
+ 	<select id="selectisDelete" parameterType="Notice" resultType="Notice">
+    	select 
+    	<include refid="Base_List" />
+    	from t_notice
+    	where 1=1
+    	<if test="id!=null"> and id=#{id} </if>
+    	<if test="account!=null"> and account=#{account} </if>
+    </select>  
+</mapper>
